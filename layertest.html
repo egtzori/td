@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang=en>
+<head>
+</head>
+
+<style>
+	.gameLayer {position: absolute; top: 0px; left: 0px;}
+</style>
+
+<script src="layer.js"></script>
+<script src="extra.js"></script>
+
+<body style='margin: 0px;'>
+
+	<input id="test" type="button" value="img" OnClick="img1();"><br>
+</body>
+
+<script>
+var grass = new Image();
+grass.src = "images/grass.gif";
+
+var canvas = document.createElement('canvas');
+var ctx = canvas.getContext('2d');		
+
+canvas.setAttribute("width", 250);
+canvas.setAttribute("height", 250)
+
+canvas.style.border = "1px solid #000";
+
+document.body.appendChild(canvas);
+
+	l = new layer('container', 250, 250);
+
+	s = l.sublayer('sublayer_id', '');
+	s2 = l.sublayer('sublayer2_id', '');
+
+	/* test rects */
+
+//	l.sublayers[0].scale(1, 0.5);
+
+	rect(l.sublayers[1], 10, 10, 20, 20, "pink");
+
+	rect(l.sublayers[0], 0, 0, 100, 100, "black");
+
+/*----------------------------------------------*/ 
+var test_array = [ 0,1,2,3 ];
+
+var level = {
+	descr : 'level1',
+	M : 10, N : 10,
+	level : test_array,
+};
+
+
+function img1() {
+
+	l.sublayers[0].drawImage(grass, 0, 0);
+	ctx.drawImage(grass, 0, 0);
+}
+</script>
+
+

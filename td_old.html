@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+</head>
+
+<script type="text/javascript" src="tilemap.js"></script>
+<script type="text/javascript" src="tower.js"></script>
+<script type="text/javascript" src="enemy.js"></script>
+<script type="text/javascript" src="projectile.js"></script>
+<script type="text/javascript" src="extra.js"></script>
+
+<body>
+
+
+<input id="test" type="button" value="spawn" OnClick="do_spawn_enemy();">
+<!--
+<input id="test" type="button" value="test path" OnClick="test_path();">
+<input id="test" type="button" value="print" OnClick="printlog();">
+--!>
+
+<script type="text/javascript" >
+var M = 20; /* M*N tilemap */
+var N = 20;
+var CW = 30; /* cell w/h */
+var CH = 30;
+
+var win = window;
+var doc = document;
+var canvas = doc.createElement('canvas');
+var ctx = canvas.getContext('2d');
+
+var loaded = 0;
+var interval = 0; /* timer */
+
+canvas.setAttribute("width", M * CW);
+canvas.setAttribute("height", N * CH);
+
+doc.body.appendChild(canvas);
+
+
+/* preload images */
+var grass = new Image();
+grass.src = "images/grass.gif";
+var tree1 = new Image();
+tree1.src = "images/tree1.gif";
+var tree2 = new Image();
+tree2.src = "images/tree2.gif";
+var road = new Image();
+road.src = "images/road.gif";
+var foe1 = new Image();
+foe1.src = "images/foe1.gif";
+
+var tower1 = new Image();
+tower1.src = "images/tower1.gif";
+var tower2 = new Image();
+tower2.src = "images/tower2.gif";
+
+var shot1 = new Image();
+shot1.src = "images/shot1.gif";
+
+/* setup tile */
+var tm = new tilemap(ctx, 10, 10, 50, 50);
+
+tm.set_tile_image(0, grass);	
+tm.set_tile_image(1, tree1);	
+tm.set_tile_image(2, tree2);	
+tm.set_tile_image(5, road);	
+
+tm.tiles = 
+[
+ 5,0,0,0,0,0,5,5,5,0,
+ 5,5,0,0,0,0,5,0,5,0,
+ 0,5,5,5,5,0,5,0,5,0,
+ 0,0,0,0,5,1,5,0,5,0,
+ 5,5,5,5,5,1,5,1,5,0,
+ 5,0,0,0,0,0,5,1,5,0,
+ 5,5,5,5,5,5,5,0,5,0,
+ 0,0,0,0,0,0,0,0,5,0,
+ 0,0,0,0,0,0,0,0,5,0,
+ 0,0,0,0,0,0,0,0,5,5,
+];
+
+var tile_index_start = 0;
+var tile_index_end = 99;
+
+/* enemies */
+var list_enemies = new Array();
+
+/* towers */
+var list_towers = new Array();
+
+/* shots fired */
+var list_projectiles = new Array();
+
+window.onload = function() {
+	tm.draw();
+	interval = win.setInterval(think, 33);
+
+	var test_tower = new tower(ctx, tm, 13, tower1, 200 /* ms_reload */, 100 /* fire range */, 5, 6);
+	list_towers.push(test_tower);
+
+	var test_tower2 = new tower(ctx, tm, 25, tower2, 900 /* ms_reload */, 250 /* fire range */, 50, 6);
+	list_towers.push(test_tower2);
+
+	var test_tower3 = new tower(ctx, tm, 52, tower1, 200 /* ms_reload */, 100 /* fire range */, 5, 6);
+	list_towers.push(test_tower3);
+
+	var test_tower3 = new tower(ctx, tm, 75, tower2, 900 /* ms_reload */, 250 /* fire range */, 50, 6);
+	list_towers.push(test_tower3);
+
+//var n = get_neighbours(99, tm);
+
+//var path = generate_path(0, 99, tm, 5);
+/*
+for (i=0; i<n.length; i++) {
+	tm.tiles[n[i]] = 1;
+}
+tm.draw();
+ */
+
+//p = array_print(n);
+
+	//printlog();
+
+//document.write(n);
+//document.write(tm.tiles);
+
+}
+
+//document.write(tm.size_x);
+
+function do_spawn_enemy() {
+	var e = new enemy(ctx, tm, tile_index_start, foe1,  1 + rand(2) );
+	e.path = generate_path(tile_index_start, tile_index_end, tm, 5);
+	log2("path len = " + e.path.length);
+	list_enemies.push(e);
+	log2("total enemies = " + list_enemies.length);
+}
+
+function draw_scene() {
+	//if (0 == list_enemies.length)
+	//	return;
+
+	for (i=0; i<list_towers.length; i++) {
+		t = list_towers[i];
+		t.draw();
+		t.think();
+	}
+
+	for (i=0; i<list_enemies.length; i++) {
+		e = list_enemies[i];
+		e.draw();
+		e.think();
+
+		if (e_enemy_state.despawn == e.state) {
+			/* remove */
+			list_enemies.splice(i, 1);
+			i--;
+			continue;
+		}
+
+		if (e_enemy_state.destroy == e.state) {
+			list_enemies.splice(i, 1);
+			i--;
+			/* animation ? */
+			continue;
+		}
+	}
+	
+	for (i=0; i<list_projectiles.length; i++) {
+		p = list_projectiles[i];
+		p.draw();
+		p.think();
+
+		if (e_projectile_state.destroy == p.state) {
+			/* remove */
+			list_projectiles.splice(i, 1);
+			i--;
+			//javascript_abort("remove projectile ");
+			continue;
+		}
+	}
+	
+}
+
+function think() {
+	tm.draw();
+	draw_scene();
+
+}
+
+function test_path() {
+	var path = generate_path(tile_index_start, tile_index_end, tm, 5);
+	for (i=0; i<path.length; i++) {
+		tm.tiles[path[i]] = 2;
+	}
+	tm.draw();
+}
+</script>
+
+
+</body>

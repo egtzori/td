@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang=en>
+<head>
+	<style>
+
+		div.lives {
+			width: 100px;
+			height: 45px;
+			text-align: right;
+			border: 1px;
+			float: left;
+		}
+
+		div.lives_heart {
+			width: 35px;
+			height: 35px;
+			background-image: url(images/heart.png);
+			background-position:center;
+			float: right;
+		}
+
+		div.money {
+			width: 100px;
+			height: 45px;
+			color: yellow;
+			text-align: right;
+			border: 1px;
+			float: left;
+		}
+
+		div.money_stotinka {
+			width: 35px;
+			height: 35px;
+			background-image: url(images/moneta.png);
+			background-position:center;
+			float: right;
+		}
+
+		div.td_rightpanel {
+			width: 188px;
+			height: 500px;
+			float: left;
+			background-image: url(images/right.png);
+			background-position:center;
+		}
+
+
+		div.builder_buy {
+			width: 50px;
+			height: 87px;
+			float: left;
+			margin: 5px;
+			background-color: #0088ff;
+		}
+
+		div.header {
+			width: 780px;
+			height: 105px;
+			background-color:yellow;
+			background-image: url(images/GN2.png);
+			background-position:center;
+			background-repeat:no-repeat;
+		}
+
+		div.footer {
+			width: 780px;
+			height: 47px;
+			float: left;
+			background-image: url(images/footer.png);
+			background-position:center;
+			background-repeat:no-repeat;
+		}
+
+
+		div.menu {
+			width: 92px;
+			height: 500px;
+			float: left;
+			background-image: url(images/menu.png);
+			background-position:center;
+			background-repeat:no-repeat;
+		}
+
+
+		div.menubutton {
+			text-align: center;
+			color: yellow;
+			text-shadow: #ffffff 1px 1px 1px;
+			text-shadow: #ffffff -1px -1px 1px;
+		}
+
+		div.menubutton:hover {
+			font-weight: bold;
+			text-align: center;
+			color: #00ff00;
+			text-shadow: #ffffff -1px 0px 1px;
+		}
+	</style>
+</head>
+
+<script src="layer.js"></script>
+<script src="tilemap.js"></script>
+<script src="td_data.js"></script>
+<script src="td_builder.js"></script>
+<script src="td_core.js"></script>
+<script src="td_level.js"></script>
+<script src="tower.js"></script>
+<script src="enemy.js"></script>
+<script src="projectile.js"></script>
+<script src="animation.js"></script>
+<script src="extra.js"></script>
+
+
+<body style='margin: 0px;'>
+
+	<div class="header">
+	</div>
+	<div class="menu"> 
+		<div class="menubutton" OnClick="a_start();"> Start </div>
+		<div class="menubutton" OnClick="level1();"> Level 1 </div>
+		<div class="menubutton" OnClick="level2();"> Level 2 </div>
+		<div class="menubutton" OnClick="stop();"> Stop </div>
+		<div class="menubutton" OnClick="level_builder();"> Editor </div>
+	</div>
+	<div id="td_td" style="background-color:#eeeeee;width:500px;float:left;">
+	</div>
+	<div id="td_rightpanel" class="td_rightpanel">
+	</div>
+	<div class="footer"></div>
+
+</body>
+
+<script>
+	//        <div style="width:780px; background-color:yellow;clear:both">
+
+	var interval = 0; /* timer */
+	td_init();
+	td_load_images();
+
+	window.onkeydown = td_keydown;
+	window.onkeyup = td_keyup;
+	window.onmousemove = td_onmousemove;
+	window.onclick = td_onmouseclick;
+
+	/* end */
+
+	/* typo */
+	last_arc = -1;
+
+function think() {
+
+	td_think();
+
+	/* TEMP HACK */
+	if (undefined === td_current_level) {
+		return;
+	}
+	td_draw_towers();
+	td_draw_enemies();
+	td_draw_projectiles();
+	td_draw_explosions();
+
+	{ /* premesti me */
+		this_arc = td_mouse_over_tower();
+		if (last_arc != this_arc) {
+			l.sublayers['arcs'].clearRect(0, 0, l.canvases['arcs'].width, l.canvases['arcs'].height);
+			if (-1 != this_arc) {
+				td_current_level.towers[this_arc].draw_arc();
+			}
+			last_arc = this_arc;
+		}
+	}
+
+	/* izbrana kula za stroene pod mishkta */
+	td_builder_preview();
+
+}
+
+/*----------------------------------------------*/ 
+function img1() {
+	a.restart();
+	a.repeat++;
+}
+	
+function img2() {
+	b.restart();
+	b.repeat++;
+}
+
+function stop() {
+	clearInterval(interval);
+}
+
+function a_start() {
+	td_start_level();
+}
+
+function spawn() {
+	td_spawn_enemy();
+}
+
+function level1() {
+	builder_init();
+	td_load_level(td_level1);
+	td_draw_terrain();
+	td_draw_towers();
+	td_draw_enemies();
+}
+
+function level2() {
+	builder_init();
+	td_load_level(td_level2);
+	td_draw_terrain();
+	td_draw_towers();
+	td_draw_enemies();
+}
+
+function level_builder() {
+	builder_init_levelbuilder();
+	td_load_level(td_level_empty10_10);
+	td_draw_terrain();
+	window.onkeydown = td_levelbuilder_keydown;
+}
+window.onload = function() {
+
+	td_data_init();
+
+
+	interval = window.setInterval(think, 33);
+
+	console.log("loaded");
+}
+
+</script>
+
+
